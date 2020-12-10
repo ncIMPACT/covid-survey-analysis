@@ -1,0 +1,547 @@
+library(tidyverse)
+library(ggtext)
+library(extrafont)
+library(here)
+library(janitor)
+library(glue)
+library(gt)
+library(RColorBrewer)
+
+dat <- read_csv(here("data/final-clean-data.csv")) %>% 
+  rename(q4 = q4_1) %>%
+  mutate(juri_type = case_when(
+    str_length(coded_geoid) > 5 ~ "Municipality",
+    str_length(coded_geoid) <= 5 ~ "County"
+  )) %>%
+  mutate(county_tier = as.character(county_tier))
+
+subgroups <- c("juri_type", "q18", "county_tier", "prosperity_zone", "cog")
+
+grouped_dat <- dat %>%
+  pivot_longer(cols = all_of(subgroups), names_to = "subgroup", values_to = "subgroup_value") %>%
+  mutate(subgroup_value = ifelse(is.na(subgroup_value), "Unknown", subgroup_value)) %>%
+  filter(subgroup_value != "Unknown")
+
+add_diff_color <- function(diff) {
+  add_color <- if (diff > .10) {
+    "background: hsl(216, 100%, 91%); color: hsl(216, 90%, 31%);"
+  } else if (diff <=.10 & diff >= -.10) {
+    "color: hsl(210, 7%, 27%);"
+  } else if (diff < -.10) {
+    "background: hsl(46, 100%, 90%); color: hsl(45, 94%, 21%);"
+  }
+  div_out <- htmltools::div(
+    style = paste(
+      "display: inline-block; padding: 12px 10px; border-radius: 15px;",
+      add_color
+    ),
+    paste(round(diff, digits = 4)*100, "pts")
+  )
+  
+  as.character(div_out) %>% 
+    gt::html()
+}
+
+add_diff_color_alt <- function(diff) {
+  add_color <- if (diff > 10) {
+    "background: hsl(216, 100%, 91%); color: hsl(216, 90%, 31%);"
+  } else if (diff <= 10 & diff >= -10) {
+    "color: hsl(210, 7%, 27%);"
+  } else if (diff < -10) {
+    "background: hsl(46, 100%, 90%); color: hsl(45, 94%, 21%);"
+  }
+  div_out <- htmltools::div(
+    style = paste(
+      "display: inline-block; padding: 12px 10px; border-radius: 15px;",
+      add_color
+    ),
+    paste(round(diff, digits = 2), "pts")
+  )
+  
+  as.character(div_out) %>% 
+    gt::html()
+}
+  
+###### IMPACT ON ORGANIZATION BY RESPONDENT SUBGROUP
+resp_compare <- dat %>%
+  group_by(q5) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(ov_pct = n / sum(n)) %>%
+  mutate(q5 = ifelse(is.na(q5), "No Response", q5)) %>%
+  select(-n)
+
+grouped_dat %>%
+  group_by(subgroup, subgroup_value, q5) %>%
+  count() %>%
+  mutate(q5 = ifelse(is.na(q5), "No Response", q5)) %>%
+  ungroup() %>%
+  group_by(subgroup_value) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  select(-n) %>%
+  mutate(pct = ifelse(is.na(pct), 0, pct)) %>%
+  left_join(resp_compare) %>%
+  mutate(pct = pct - ov_pct) %>%
+  select(-ov_pct) %>%
+  pivot_wider(values_from = pct, names_from = q5, values_fill = 0) %>%
+  mutate(across(.cols = 3:7, .fns = ~map(., add_diff_color))) %>%
+  mutate(subgroup = case_when(
+    subgroup == "cog" ~ "COG Region",
+    subgroup == "prosperity_zone" ~ "Prosperity Zone",
+    subgroup == "juri_type" ~ "Jurisdiction Type",
+    subgroup == "county_tier" ~ "County Tier",
+    subgroup == "q18" ~ "Respondent Type"
+  )) %>%
+  select(subgroup, subgroup_value, `Negative Impact`, `No Impact`, `Positive Impact`, `Too Soon to Tell`, `No Response`) %>%
+  group_by(subgroup) %>%
+  gt(rowname_col = "subgroup_value") %>%
+  tab_header(title = html("Difference For Impact on Organization by Respondent Subgroup Classification")) %>%
+  tab_options(table.font.names = "Lato") %>%
+  tab_style(style = list(cell_text(align = "left", weight = "bold", size = "medium")),
+            locations = list(cells_title(groups = "title"))) %>%
+  tab_style(style = list(cell_text(size = "medium", weight = "bold"),
+                         cell_borders(sides = "bottom", weight = px(3))),
+            locations = list(cells_row_groups())) %>%
+  tab_style(style = list(cell_text(align = "right", size = "small"),
+                         cell_borders(sides = "right", weight = px(3))),
+            locations = list(cells_stub())) %>%
+  tab_style(style = list(cell_text(weight = "bold", align = "center", size = "small")),
+            locations = list(cells_column_labels(columns = everything()))) %>%
+  tab_style(style = list(cell_text(size = "small")),
+            locations = list(cells_body(columns = everything()))) %>%
+  cols_width(everything() ~ px(5)) %>%
+  cols_width(vars(subgroup_value) ~ px(10)) %>%
+  tab_options(table.font.names = "Arial", table.width = pct(80))
+  
+###### IMPACT ON COMMUNITY BY RESPONDENT SUBGROUP
+resp_compare <- dat %>%
+  group_by(q20) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(ov_pct = n / sum(n)) %>%
+  mutate(q20 = ifelse(is.na(q20), "No Response", q20)) %>%
+  select(-n)
+
+grouped_dat %>%
+  group_by(subgroup, subgroup_value, q20) %>%
+  count() %>%
+  mutate(q20 = ifelse(is.na(q20), "No Response", q20)) %>%
+  ungroup() %>%
+  group_by(subgroup_value) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  select(-n) %>%
+  mutate(pct = ifelse(is.na(pct), 0, pct)) %>%
+  left_join(resp_compare) %>%
+  mutate(pct = pct - ov_pct) %>%
+  select(-ov_pct) %>%
+  pivot_wider(values_from = pct, names_from = q20, values_fill = 0) %>%
+  mutate(across(.cols = 3:7, .fns = ~map(., add_diff_color))) %>%
+  mutate(subgroup = case_when(
+    subgroup == "cog" ~ "COG Region",
+    subgroup == "prosperity_zone" ~ "Prosperity Zone",
+    subgroup == "juri_type" ~ "Jurisdiction Type",
+    subgroup == "county_tier" ~ "County Tier",
+    subgroup == "q18" ~ "Respondent Type"
+  )) %>%
+  select(subgroup, subgroup_value, `Negative Impact`, `No Impact`, `Positive Impact`, `Too Soon to Tell`, `No Response`) %>%
+  group_by(subgroup) %>%
+  gt(rowname_col = "subgroup_value") %>%
+  tab_header(title = html("Impact on Local Community by Respondent Subgroup Classification")) %>%
+  tab_options(table.font.names = "Lato") %>%
+  tab_style(style = list(cell_text(align = "left", weight = "bold", size = "medium")),
+            locations = list(cells_title(groups = "title"))) %>%
+  tab_style(style = list(cell_text(size = "medium", weight = "bold"),
+                         cell_borders(sides = "bottom", weight = px(3))),
+            locations = list(cells_row_groups())) %>%
+  tab_style(style = list(cell_text(align = "right", size = "small"),
+                         cell_borders(sides = "right", weight = px(3))),
+            locations = list(cells_stub())) %>%
+  tab_style(style = list(cell_text(weight = "bold", align = "center", size = "small")),
+            locations = list(cells_column_labels(columns = everything()))) %>%
+  tab_style(style = list(cell_text(size = "small")),
+            locations = list(cells_body(columns = everything()))) %>%
+  cols_width(everything() ~ px(10)) %>%
+  tab_options(table.font.names = "Arial", table.width = pct(90))  
+
+###### NEGATIVE IMPACT ON COMMUNITY BY RESPONDENT SUBGROUP
+q10_vars <- dat %>%
+  mutate(q10 = str_split(q10, ",")) %>%
+  unnest(cols = q10) %>%
+  distinct(q10) %>%
+  mutate(q10 = ifelse(is.na(q10), "No Response", q10)) %>%
+  pull()
+
+denom_one <- grouped_dat %>%
+  filter(!(is.na(q10))) %>%
+  group_by(subgroup, subgroup_value) %>%
+  count(name = "respondents")
+
+denom_two <- dat %>%
+  filter(!(is.na(q10))) %>%
+  nrow()
+
+resp_compare <- dat %>%
+  mutate(q10 = str_split(q10, ",")) %>%
+  unnest(cols = q10) %>%
+  group_by(q10) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(ov_pct = n / denom_two) %>%
+  mutate(q10 = ifelse(is.na(q10), "No Response", q10)) %>%
+  select(-n)
+
+grouped_dat %>%
+  mutate(q10 = str_split(q10, ",")) %>%
+  unnest(cols = q10) %>%
+  group_by(subgroup, subgroup_value, q10) %>%
+  count() %>%
+  mutate(q10 = ifelse(is.na(q10), "No Response", q10)) %>%
+  ungroup() %>%
+  left_join(denom_one) %>%
+  mutate(pct = n / respondents) %>%
+  select(-c(n, respondents)) %>%
+  mutate(pct = ifelse(is.na(pct), 0, pct)) %>%
+  left_join(resp_compare) %>%
+  mutate(pct = pct - ov_pct) %>%
+  select(-ov_pct) %>%
+  pivot_wider(values_from = pct, names_from = q10, values_fill = 0) %>%
+  mutate(across(.cols = 3:15, .fns = ~map(., add_diff_color))) %>%
+  mutate(subgroup = case_when(
+    subgroup == "cog" ~ "COG Region",
+    subgroup == "prosperity_zone" ~ "Prosperity Zone",
+    subgroup == "juri_type" ~ "Jurisdiction Type",
+    subgroup == "county_tier" ~ "County Tier",
+    subgroup == "q18" ~ "Respondent Type"
+  )) %>%
+  select(everything(), all_of(q10_vars)) %>%
+  group_by(subgroup) %>%
+  gt(rowname_col = "subgroup_value") %>%
+  tab_header(title = html("Negative Impacts on Local Community by Respondent Subgroup Classification")) %>%
+  tab_options(table.font.names = "Lato") %>%
+  tab_style(style = list(cell_text(align = "left", weight = "bold", size = "medium")),
+            locations = list(cells_title(groups = "title"))) %>%
+  tab_style(style = list(cell_text(size = "medium", weight = "bold"),
+                         cell_borders(sides = "bottom", weight = px(3))),
+            locations = list(cells_row_groups())) %>%
+  tab_style(style = list(cell_text(align = "right", size = "small"),
+                         cell_borders(sides = "right", weight = px(3))),
+            locations = list(cells_stub())) %>%
+  tab_style(style = list(cell_text(weight = "bold", align = "center", size = "small")),
+            locations = list(cells_column_labels(columns = everything()))) %>%
+  tab_style(style = list(cell_text(size = "small")),
+            locations = list(cells_body(columns = everything()))) %>%
+  cols_width(everything() ~ px(5)) %>%
+  cols_width(vars(subgroup_value) ~ px(10)) %>%
+  tab_options(table.font.names = "Arial", table.width = pct(90)) 
+
+###### NEGATIVE IMPACT ON ORGANIZATION BY RESPONDENT SUBGROUP
+q6_vars <- dat %>%
+  mutate(q6 = str_split(q6, ",")) %>%
+  unnest(cols = q6) %>%
+  distinct(q6) %>%
+  mutate(q6 = ifelse(is.na(q6), "No Response", q6)) %>%
+  pull()
+
+denom_one <- grouped_dat %>%
+  filter(!(is.na(q6))) %>%
+  group_by(subgroup, subgroup_value) %>%
+  count(name = "respondents")
+
+denom_two <- dat %>%
+  filter(!(is.na(q6))) %>%
+  nrow()
+
+resp_compare <- dat %>%
+  mutate(q6 = str_split(q6, ",")) %>%
+  unnest(cols = q6) %>%
+  group_by(q6) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(ov_pct = n / denom_two) %>%
+  mutate(q6 = ifelse(is.na(q6), "No Response", q6)) %>%
+  select(-n)
+
+grouped_dat %>%
+  mutate(q6 = str_split(q6, ",")) %>%
+  unnest(cols = q6) %>%
+  group_by(subgroup, subgroup_value, q6) %>%
+  count() %>%
+  mutate(q6 = ifelse(is.na(q6), "No Response", q6)) %>%
+  ungroup() %>%
+  left_join(denom_one) %>%
+  mutate(pct = n / respondents) %>%
+  select(-c(n, respondents)) %>%
+  mutate(pct = ifelse(is.na(pct), 0, pct)) %>%
+  left_join(resp_compare) %>%
+  mutate(pct = pct - ov_pct) %>%
+  select(-ov_pct) %>%
+  pivot_wider(values_from = pct, names_from = q6, values_fill = 0) %>%
+  mutate(across(.cols = 3:16, .fns = ~map(., add_diff_color))) %>%
+  mutate(subgroup = case_when(
+    subgroup == "cog" ~ "COG Region",
+    subgroup == "prosperity_zone" ~ "Prosperity Zone",
+    subgroup == "juri_type" ~ "Jurisdiction Type",
+    subgroup == "county_tier" ~ "County Tier",
+    subgroup == "q18" ~ "Respondent Type"
+  )) %>%
+  select(everything(), all_of(q6_vars)) %>%
+  group_by(subgroup) %>%
+  gt(rowname_col = "subgroup_value") %>%
+  tab_header(title = html("Negative Impacts on Organization by Respondent Subgroup Classification")) %>%
+  tab_options(table.font.names = "Lato") %>%
+  tab_style(style = list(cell_text(align = "left", weight = "bold", size = "medium")),
+            locations = list(cells_title(groups = "title"))) %>%
+  tab_style(style = list(cell_text(size = "medium", weight = "bold"),
+                         cell_borders(sides = "bottom", weight = px(3))),
+            locations = list(cells_row_groups())) %>%
+  tab_style(style = list(cell_text(align = "right", size = "small"),
+                         cell_borders(sides = "right", weight = px(3))),
+            locations = list(cells_stub())) %>%
+  tab_style(style = list(cell_text(weight = "bold", align = "center", size = "small")),
+            locations = list(cells_column_labels(columns = everything()))) %>%
+  tab_style(style = list(cell_text(size = "small")),
+            locations = list(cells_body(columns = everything()))) %>%
+  cols_width(everything() ~ px(5)) %>%
+  cols_width(vars(subgroup_value) ~ px(10)) %>%
+  tab_options(table.font.names = "Arial", table.width = pct(90)) 
+
+###### WHEN ARE NEGATIVE IMPACTS EXPECTED ON ORGANIZATION BY RESPONDENT SUBGROUP
+q9_vars <- dat %>%
+  mutate(q9 = str_split(q9, ",")) %>%
+  unnest(cols = q9) %>%
+  distinct(q9) %>%
+  mutate(q9 = ifelse(is.na(q9), "No Response", q9)) %>%
+  pull()
+
+resp_compare <- dat %>%
+  group_by(q9) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(ov_pct = n / sum(n)) %>%
+  mutate(q9 = ifelse(is.na(q9), "No Response", q9)) %>%
+  select(-n)
+
+grouped_dat %>%
+  mutate(q9 = str_split(q9, ",")) %>%
+  unnest(cols = q9) %>%
+  group_by(subgroup, subgroup_value, q9) %>%
+  count() %>%
+  mutate(q9 = ifelse(is.na(q9), "No Response", q9)) %>%
+  ungroup() %>%
+  group_by(subgroup_value) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  select(-n) %>%
+  mutate(pct = ifelse(is.na(pct), 0, pct)) %>%
+  left_join(resp_compare) %>%
+  mutate(pct = pct - ov_pct) %>%
+  select(-ov_pct) %>%
+  pivot_wider(values_from = pct, names_from = q9, values_fill = 0) %>%
+  mutate(across(.cols = 3:9, .fns = ~map(., add_diff_color))) %>%
+  mutate(subgroup = case_when(
+    subgroup == "cog" ~ "COG Region",
+    subgroup == "prosperity_zone" ~ "Prosperity Zone",
+    subgroup == "juri_type" ~ "Jurisdiction Type",
+    subgroup == "county_tier" ~ "County Tier",
+    subgroup == "q18" ~ "Respondent Type"
+  )) %>%
+  select(everything(), all_of(q9_vars)) %>%
+  group_by(subgroup) %>%
+  gt(rowname_col = "subgroup_value") %>%
+  tab_header(title = html("When do you expect to see the most negative impacts to your organization?")) %>%
+  tab_options(table.font.names = "Lato") %>%
+  tab_style(style = list(cell_text(align = "left", weight = "bold", size = "medium")),
+            locations = list(cells_title(groups = "title"))) %>%
+  tab_style(style = list(cell_text(size = "medium", weight = "bold"),
+                         cell_borders(sides = "bottom", weight = px(3))),
+            locations = list(cells_row_groups())) %>%
+  tab_style(style = list(cell_text(align = "right", size = "small"),
+                         cell_borders(sides = "right", weight = px(3))),
+            locations = list(cells_stub())) %>%
+  tab_style(style = list(cell_text(weight = "bold", align = "center", size = "small")),
+            locations = list(cells_column_labels(columns = everything()))) %>%
+  tab_style(style = list(cell_text(size = "small")),
+            locations = list(cells_body(columns = everything()))) %>%
+  cols_width(everything() ~ px(5)) %>%
+  cols_width(vars(subgroup_value) ~ px(10)) %>%
+  tab_options(table.font.names = "Arial", table.width = pct(90)) 
+
+###### WHEN ARE NEGATIVE IMPACTS EXPECTED ON COMMUNITY BY RESPONDENT SUBGROUP
+q12_vars <- dat %>%
+  mutate(q12 = str_split(q12, ",")) %>%
+  unnest(cols = q12) %>%
+  distinct(q12) %>%
+  mutate(q12 = ifelse(is.na(q12), "No Response", q12)) %>%
+  pull()
+
+resp_compare <- dat %>%
+  group_by(q12) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(ov_pct = n / sum(n)) %>%
+  mutate(q12 = ifelse(is.na(q12), "No Response", q12)) %>%
+  select(-n)
+
+grouped_dat %>%
+  mutate(q12 = str_split(q12, ",")) %>%
+  unnest(cols = q12) %>%
+  group_by(subgroup, subgroup_value, q12) %>%
+  count() %>%
+  mutate(q12 = ifelse(is.na(q12), "No Response", q12)) %>%
+  ungroup() %>%
+  group_by(subgroup_value) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  select(-n) %>%
+  mutate(pct = ifelse(is.na(pct), 0, pct)) %>%
+  left_join(resp_compare) %>%
+  mutate(pct = pct - ov_pct) %>%
+  select(-ov_pct) %>%
+  pivot_wider(values_from = pct, names_from = q12, values_fill = 0) %>%
+  mutate(across(.cols = 3:9, .fns = ~map(., add_diff_color))) %>%
+  mutate(subgroup = case_when(
+    subgroup == "cog" ~ "COG Region",
+    subgroup == "prosperity_zone" ~ "Prosperity Zone",
+    subgroup == "juri_type" ~ "Jurisdiction Type",
+    subgroup == "county_tier" ~ "County Tier",
+    subgroup == "q18" ~ "Respondent Type"
+  )) %>%
+  select(everything(), all_of(q12_vars)) %>%
+  group_by(subgroup) %>%
+  gt(rowname_col = "subgroup_value") %>%
+  tab_header(title = html("When do you expect to see the most negative impacts to your community?")) %>%
+  tab_options(table.font.names = "Lato") %>%
+  tab_style(style = list(cell_text(align = "left", weight = "bold", size = "medium")),
+            locations = list(cells_title(groups = "title"))) %>%
+  tab_style(style = list(cell_text(size = "medium", weight = "bold"),
+                         cell_borders(sides = "bottom", weight = px(3))),
+            locations = list(cells_row_groups())) %>%
+  tab_style(style = list(cell_text(align = "right", size = "small"),
+                         cell_borders(sides = "right", weight = px(3))),
+            locations = list(cells_stub())) %>%
+  tab_style(style = list(cell_text(weight = "bold", align = "center", size = "small")),
+            locations = list(cells_column_labels(columns = everything()))) %>%
+  tab_style(style = list(cell_text(size = "small")),
+            locations = list(cells_body(columns = everything()))) %>%
+  cols_width(everything() ~ px(5)) %>%
+  cols_width(vars(subgroup_value) ~ px(10)) %>%
+  tab_options(table.font.names = "Arial", table.width = pct(90))
+
+###### HAS THE PANDEMIC HAD POSITIVE IMPACTS
+resp_compare <- dat %>%
+  mutate(q19 = str_remove(q19, " \\(Explain below\\)")) %>%
+  mutate(q21 = str_remove(q21, " \\(Explain below\\)")) %>%
+  pivot_longer(cols = c(q19, q21), values_to = "responses", names_to = "question") %>%
+  group_by(question, responses) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(responses = ifelse(is.na(responses), "No Response", responses)) %>%
+  group_by(question) %>%
+  mutate(ov_pct = n / sum(n)) %>%
+  select(-n)
+  
+grouped_dat %>%
+  mutate(q19 = str_remove(q19, " \\(Explain below\\)")) %>%
+  mutate(q21 = str_remove(q21, " \\(Explain below\\)")) %>%
+  pivot_longer(cols = c(q19, q21), values_to = "responses", names_to = "question") %>%
+  group_by(subgroup, subgroup_value, responses, question) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(responses = ifelse(is.na(responses), "No Response", responses)) %>%
+  group_by(subgroup_value, question) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  select(-n) %>%
+  mutate(pct = ifelse(is.na(pct), 0, pct)) %>%
+  left_join(resp_compare) %>%
+  mutate(pct = pct - ov_pct) %>%
+  select(-ov_pct) %>%
+  mutate(question = glue("{question}_{responses}")) %>%
+  select(-responses) %>%
+  pivot_wider(values_from = pct, names_from = question, values_fill = 0) %>%
+  clean_names() %>%
+  mutate(across(.cols = 3:8, .fns = ~map(., add_diff_color))) %>%
+  mutate(subgroup = case_when(
+    subgroup == "cog" ~ "COG Region",
+    subgroup == "prosperity_zone" ~ "Prosperity Zone",
+    subgroup == "juri_type" ~ "Jurisdiction Type",
+    subgroup == "county_tier" ~ "County Tier",
+    subgroup == "q18" ~ "Respondent Type"
+  )) %>%
+  select(1:2, starts_with("q19"), starts_with("q21")) %>%
+  group_by(subgroup) %>%
+  gt(rowname_col = "subgroup_value") %>%
+  tab_header(title = html("Difference For Impact on Organization by Respondent Subgroup Classification")) %>%
+  cols_label(q19_no = "No", q19_yes = "Yes", q19_no_response = "No Response", q21_no = "No", q21_yes = "Yes", q21_no_response = "No Response") %>%
+  tab_spanner(label = "Community", columns = starts_with("q21")) %>%
+  tab_spanner(label = "Organization", columns = starts_with("q19")) %>%
+  tab_options(table.font.names = "Lato") %>%
+  tab_style(style = list(cell_text(weight = "bold", size = "medium")),
+            locations = list(cells_column_spanners(spanners = c("Community", "Organization")))) %>%
+  tab_style(style = list(cell_text(align = "left", weight = "bold", size = "medium")),
+            locations = list(cells_title(groups = "title"))) %>%
+  tab_style(style = list(cell_text(size = "medium", weight = "bold"),
+                         cell_borders(sides = "bottom", weight = px(3))),
+            locations = list(cells_row_groups())) %>%
+  tab_style(style = list(cell_text(align = "right", size = "small"),
+                         cell_borders(sides = "right", weight = px(3))),
+            locations = list(cells_stub())) %>%
+  tab_style(style = list(cell_text(weight = "bold", align = "center", size = "small")),
+            locations = list(cells_column_labels(columns = everything()))) %>%
+  tab_style(style = list(cell_text(size = "small")),
+            locations = list(cells_body(columns = everything()))) %>%
+  cols_width(everything() ~ px(5)) %>%
+  cols_width(vars(subgroup_value) ~ px(10)) %>%
+  tab_options(table.font.names = "Arial", table.width = pct(80))
+
+########### EXPECTED REVENUE, EMPLOYMENT, WORKFORCE, & ECONOMY
+resp_compare <- dat %>%
+  pivot_longer(cols = c(q7_1, q7_2, q14_1, q14_2), values_to = "responses", names_to = "question") %>%
+  group_by(question) %>%
+  summarise(ov_pct = mean(responses, na.rm = T)) %>%
+  ungroup()
+
+grouped_dat %>%
+  pivot_longer(cols = c(q7_1, q7_2, q14_1, q14_2), values_to = "responses", names_to = "question") %>%
+  group_by(subgroup, subgroup_value, question) %>%
+  summarise(pct = mean(responses, na.rm = T)) %>%
+  ungroup() %>%
+  left_join(resp_compare) %>%
+  mutate(pct = pct - ov_pct) %>%
+  select(-ov_pct) %>%
+  pivot_wider(values_from = pct, names_from = question, values_fill = 0) %>%
+  clean_names() %>%
+  mutate(across(.cols = 3:6, .fns = ~map(., add_diff_color_alt))) %>%
+  mutate(subgroup = case_when(
+    subgroup == "cog" ~ "COG Region",
+    subgroup == "prosperity_zone" ~ "Prosperity Zone",
+    subgroup == "juri_type" ~ "Jurisdiction Type",
+    subgroup == "county_tier" ~ "County Tier",
+    subgroup == "q18" ~ "Respondent Type"
+  )) %>%
+  group_by(subgroup) %>%
+  gt(rowname_col = "subgroup_value") %>%
+  tab_header(title = html("Difference For Impact on Organization by Respondent Subgroup Classification")) %>%
+  cols_label(q14_1 = "Economy", q14_2 = "Workforce", q7_1 = "Revenue", q7_2 = "Employment") %>%
+  tab_spanner(label = "Community", columns = starts_with("q14")) %>%
+  tab_spanner(label = "Organization", columns = starts_with("q7")) %>%
+  tab_options(table.font.names = "Lato") %>%
+  tab_style(style = list(cell_text(weight = "bold", size = "medium")),
+            locations = list(cells_column_spanners(spanners = c("Community", "Organization")))) %>%
+  tab_style(style = list(cell_text(align = "left", weight = "bold", size = "medium")),
+            locations = list(cells_title(groups = "title"))) %>%
+  tab_style(style = list(cell_text(size = "medium", weight = "bold"),
+                         cell_borders(sides = "bottom", weight = px(3))),
+            locations = list(cells_row_groups())) %>%
+  tab_style(style = list(cell_text(align = "right", size = "small"),
+                         cell_borders(sides = "right", weight = px(3))),
+            locations = list(cells_stub())) %>%
+  tab_style(style = list(cell_text(weight = "bold", align = "center", size = "small")),
+            locations = list(cells_column_labels(columns = everything()))) %>%
+  tab_style(style = list(cell_text(size = "small")),
+            locations = list(cells_body(columns = everything()))) %>%
+  cols_width(everything() ~ px(5)) %>%
+  cols_width(vars(subgroup_value) ~ px(10)) %>%
+  tab_options(table.font.names = "Arial", table.width = pct(80))

@@ -295,3 +295,75 @@ ggsave(filename = "local-gov-expected-revenue.png", device = "png", dpi = "retin
 
 ggsave(filename = "local-gov-expected-revenue.svg", device = "svg", dpi = "retina",
        width = 9, height = 9, path = here("plots/"))
+
+## Positive Impacts on Organization
+dat %>%
+  mutate(q19 = str_remove(q19, " \\(Explain below\\)")) %>%
+  tabyl(q19, survey, show_na = FALSE) %>%
+  adorn_percentages(denominator = "col") %>%
+  pivot_longer(cols = c("One", "Two"), names_to = "Survey", values_to = "valid_percent") %>%
+  ggplot(aes(reorder(q19, desc(valid_percent)), valid_percent, fill = Survey)) +
+  geom_col(position = position_dodge(1)) +
+  geom_text(aes(y = valid_percent + 0.03, color = Survey, label = scales::percent(valid_percent, accuracy = 1)), position = position_dodge(width = 1)) +
+  scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
+  expand_limits(y = 1) +
+  labs(title = "Positive Impacts of Crisis On Local Government") +
+  scale_fill_manual(values = c("#003f72", "#d34733")) +
+  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  plot_theme
+
+ggsave(filename = "local-gov-positive-impact.png", device = "png", dpi = "retina",
+       width = 8, height = 4, path = here("plots/"))
+
+ggsave(filename = "local-gov-positive-impact.svg", device = "svg", dpi = "retina",
+       width = 8, height = 4, path = here("plots/"))
+
+## Positive Impacts on Community
+dat %>%
+  mutate(q21 = str_remove(q21, " \\(Explain below\\)")) %>%
+  tabyl(q21, survey, show_na = FALSE) %>%
+  adorn_percentages(denominator = "col") %>%
+  pivot_longer(cols = c("One", "Two"), names_to = "Survey", values_to = "valid_percent") %>%
+  ggplot(aes(reorder(q21, desc(valid_percent)), valid_percent, fill = Survey)) +
+  geom_col(position = position_dodge(1)) +
+  geom_text(aes(y = valid_percent + 0.03, color = Survey, label = scales::percent(valid_percent, accuracy = 1)), position = position_dodge(width = 1)) +
+  scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
+  expand_limits(y = 1) +
+  labs(title = "Positive Impacts of Crisis On Community") +
+  scale_fill_manual(values = c("#003f72", "#d34733")) +
+  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  plot_theme
+
+ggsave(filename = "community-positive-impact.png", device = "png", dpi = "retina",
+       width = 8, height = 4, path = here("plots/"))
+
+ggsave(filename = "community-positive-impact.svg", device = "svg", dpi = "retina",
+       width = 8, height = 4, path = here("plots/"))
+
+## Estimated Average Employment Impact on Local Gov
+dat %>%
+  group_by(prosperity_zone, survey) %>%
+  summarise(avg = mean(q7_2, na.rm = TRUE)) %>%
+  ungroup() %>%
+  filter(!(is.na(prosperity_zone))) %>%
+  mutate(prosperity_zone = str_remove(prosperity_zone, " Region")) %>%
+  mutate(avg = avg * -1) %>%
+  ggplot(aes(reorder(prosperity_zone, prosperity_zone), avg, fill = survey)) +
+  geom_col(position = position_dodge(-1)) +
+  geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1, color = survey), position = position_dodge(-1)) +
+  scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
+  expand_limits(y = 25) +
+  scale_fill_manual("Survey", values = c("#003f72", "#d34733")) +
+  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
+  coord_flip() +
+  labs(title = "Estimated Average Employment Impact on Local Government") +
+  plot_theme_flip
+
+ggsave(filename = "local-gov-expected-employment.png", device = "png", dpi = "retina",
+       width = 9, height = 9, path = here("plots/"))
+
+ggsave(filename = "local-gov-expected-employment.svg", device = "svg", dpi = "retina",
+       width = 9, height = 9, path = here("plots/"))
