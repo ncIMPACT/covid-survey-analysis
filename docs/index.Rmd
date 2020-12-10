@@ -1,3 +1,23 @@
+---
+title: "COVID-19 Survey of Local Governments"
+author:
+- name: Jason Jones
+  url: https://www.sog.unc.edu/about/faculty-and-staff/jason-jones
+  affiliation: The ncIMPACT Initiative
+  affiliation_url: https://ncimpact.sog.unc.edu/
+date: "`r Sys.Date()`"
+description: |
+  This is a collection of subgroup analysis tables for the COVID-19 Survey of Local Government conducted between October and December of 2020 by the ncIMPACT initiative at the UNC School of Government.
+output:
+  distill::distill_article:
+    toc: true
+    toc_float: false
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, layout = "l-body-outset")
+
 library(tidyverse)
 library(ggtext)
 library(extrafont)
@@ -61,8 +81,11 @@ add_diff_color_alt <- function(diff) {
   as.character(div_out) %>% 
     gt::html()
 }
-  
-###### IMPACT ON ORGANIZATION BY RESPONDENT SUBGROUP
+```
+
+# Direct Organizational Impact
+
+```{r}
 resp_compare <- dat %>%
   group_by(q5) %>%
   count() %>%
@@ -112,9 +135,13 @@ grouped_dat %>%
             locations = list(cells_body(columns = everything()))) %>%
   cols_width(everything() ~ px(5)) %>%
   cols_width(vars(subgroup_value) ~ px(10)) %>%
-  tab_options(table.font.names = "Arial", table.width = pct(80))
+  tab_options(table.font.names = "Arial", table.width = pct(100))
   
-###### IMPACT ON COMMUNITY BY RESPONDENT SUBGROUP
+```
+
+# Direct Community Impact
+
+```{r}
 resp_compare <- dat %>%
   group_by(q20) %>%
   count() %>%
@@ -163,9 +190,12 @@ grouped_dat %>%
   tab_style(style = list(cell_text(size = "small")),
             locations = list(cells_body(columns = everything()))) %>%
   cols_width(everything() ~ px(10)) %>%
-  tab_options(table.font.names = "Arial", table.width = pct(90))  
+  tab_options(table.font.names = "Arial", table.width = pct(100))  
+```
 
-###### NEGATIVE IMPACT ON COMMUNITY BY RESPONDENT SUBGROUP
+# Top Three Negative Community Impacts
+
+```{r}
 q10_vars <- dat %>%
   mutate(q10 = str_split(q10, ",")) %>%
   unnest(cols = q10) %>%
@@ -234,9 +264,12 @@ grouped_dat %>%
             locations = list(cells_body(columns = everything()))) %>%
   cols_width(everything() ~ px(5)) %>%
   cols_width(vars(subgroup_value) ~ px(10)) %>%
-  tab_options(table.font.names = "Arial", table.width = pct(90)) 
+  tab_options(table.font.names = "Arial", table.width = pct(100)) 
+```
 
-###### NEGATIVE IMPACT ON ORGANIZATION BY RESPONDENT SUBGROUP
+# Top Three Negative Organization Impacts
+
+```{r}
 q6_vars <- dat %>%
   mutate(q6 = str_split(q6, ",")) %>%
   unnest(cols = q6) %>%
@@ -305,9 +338,12 @@ grouped_dat %>%
             locations = list(cells_body(columns = everything()))) %>%
   cols_width(everything() ~ px(5)) %>%
   cols_width(vars(subgroup_value) ~ px(10)) %>%
-  tab_options(table.font.names = "Arial", table.width = pct(90)) 
+  tab_options(table.font.names = "Arial", table.width = pct(100)) 
+```
 
-###### WHEN ARE NEGATIVE IMPACTS EXPECTED ON ORGANIZATION BY RESPONDENT SUBGROUP
+# When Are Negative Impacts Expected - Organization
+
+```{r}
 q9_vars <- dat %>%
   mutate(q9 = str_split(q9, ",")) %>%
   unnest(cols = q9) %>%
@@ -366,9 +402,12 @@ grouped_dat %>%
             locations = list(cells_body(columns = everything()))) %>%
   cols_width(everything() ~ px(5)) %>%
   cols_width(vars(subgroup_value) ~ px(10)) %>%
-  tab_options(table.font.names = "Arial", table.width = pct(90)) 
+  tab_options(table.font.names = "Arial", table.width = pct(100)) 
+```
 
-###### WHEN ARE NEGATIVE IMPACTS EXPECTED ON COMMUNITY BY RESPONDENT SUBGROUP
+# When Are Negative Impacts Expected - Community
+
+```{r}
 q12_vars <- dat %>%
   mutate(q12 = str_split(q12, ",")) %>%
   unnest(cols = q12) %>%
@@ -427,9 +466,13 @@ grouped_dat %>%
             locations = list(cells_body(columns = everything()))) %>%
   cols_width(everything() ~ px(5)) %>%
   cols_width(vars(subgroup_value) ~ px(10)) %>%
-  tab_options(table.font.names = "Arial", table.width = pct(90))
+  tab_options(table.font.names = "Arial", table.width = pct(100))
 
-###### HAS THE PANDEMIC HAD POSITIVE IMPACTS
+```
+
+# Positive Impact of COVID-19 Pandemic
+
+```{r}
 resp_compare <- dat %>%
   mutate(q19 = str_remove(q19, " \\(Explain below\\)")) %>%
   mutate(q21 = str_remove(q21, " \\(Explain below\\)")) %>%
@@ -494,9 +537,12 @@ grouped_dat %>%
             locations = list(cells_body(columns = everything()))) %>%
   cols_width(everything() ~ px(5)) %>%
   cols_width(vars(subgroup_value) ~ px(10)) %>%
-  tab_options(table.font.names = "Arial", table.width = pct(80))
+  tab_options(table.font.names = "Arial", table.width = pct(100))
+```
 
-########### EXPECTED REVENUE, EMPLOYMENT, WORKFORCE, & ECONOMY
+# Expected Impact To Revenue, Employment, Workforce, And Economy
+
+```{r}
 resp_compare <- dat %>%
   pivot_longer(cols = c(q7_1, q7_2, q14_1, q14_2), values_to = "responses", names_to = "question") %>%
   group_by(question) %>%
@@ -545,3 +591,5 @@ grouped_dat %>%
   cols_width(everything() ~ px(5)) %>%
   cols_width(vars(subgroup_value) ~ px(10)) %>%
   tab_options(table.font.names = "Arial", table.width = pct(80))
+
+```
