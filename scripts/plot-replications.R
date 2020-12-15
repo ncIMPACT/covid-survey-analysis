@@ -1,6 +1,6 @@
 library(tidyverse)
 library(ggtext)
-library(extrafont)
+library(showtext)
 library(here)
 library(janitor)
 library(glue)
@@ -17,36 +17,42 @@ survey_one <- read_csv(here("data/survey-one-data.csv")) %>%
 
 dat <- rbind(dat, survey_one)
 
-plot_theme <- theme(text = element_text(family = "Arial"),
+font_add(family = "Myriad Pro", regular = "C:/Windows/Installer/$PatchCache$/Managed/68AB67CA3301FFFF7706C0F070E41400/15.7.20033/MyriadPro_Regular.otf",
+         bold = "C:/Windows/Installer/$PatchCache$/Managed/68AB67CA3301FFFF7706C0F070E41400/15.7.20033/MyriadPro_Bold.otf1")
+
+showtext_auto()
+showtext_opts(dpi = 320)
+
+plot_theme <- theme(text = element_text(family = "Myriad Pro"),
                     plot.background = element_rect(fill = "transparent"),
                    panel.background = element_rect(fill = "transparent"),
-                   panel.grid.major.y = element_line(color = "#696969", linetype = "solid"),
+                   panel.grid.major.y = element_line(color = "#808080", linetype = "solid"),
                    panel.grid.major.x = element_blank(),
                    panel.grid.minor = element_blank(),
                    axis.ticks = element_blank(),
-                   axis.line = element_line(color = "#696969"),
-                   plot.title = element_text(size = 18, face = "bold", color = "#d34733", hjust = 0),
+                   axis.line = element_line(color = "#808080"),
+                   plot.title = element_text(size = 12, face = "bold", color = "#cf2d00", hjust = 0),
                    plot.subtitle = element_text(size = 14),
                    axis.title = element_blank(),
                    axis.text = element_text(size = 10, face = "bold", color = "#151515"),
-                   legend.text = element_text(size = 12),
+                   legend.text = element_text(size = 10),
                    legend.position = "top",
                    legend.justification = "left",
                    plot.caption = element_markdown(size = 11, hjust = 0))
 
-plot_theme_flip <- theme(text = element_text(family = "Arial"),
+plot_theme_flip <- theme(text = element_text(family = "Myriad Pro"),
                     plot.background = element_rect(fill = "transparent"),
                     panel.background = element_rect(fill = "transparent"),
-                    panel.grid.major.x = element_line(color = "#696969", linetype = "solid"),
+                    panel.grid.major.x = element_line(color = "#808080", linetype = "solid"),
                     panel.grid.major.y = element_blank(),
                     panel.grid.minor = element_blank(),
                     axis.ticks = element_blank(),
-                    axis.line = element_line(color = "#696969"),
-                    plot.title = element_text(size = 18, face = "bold", color = "#d34733", hjust = 0),
+                    axis.line = element_line(color = "#808080"),
+                    plot.title = element_text(size = 12, face = "bold", color = "#cf2d00", hjust = 0),
                     plot.subtitle = element_text(size = 14),
                     axis.title = element_blank(),
                     axis.text = element_text(size = 10, face = "bold", color = "#151515"),
-                    legend.text = element_text(size = 12),
+                    legend.text = element_text(size = 10),
                     legend.position = "top",
                     legend.justification = "left",
                     plot.caption = element_markdown(size = 11, hjust = 0),
@@ -63,8 +69,8 @@ dat %>%
   scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
   expand_limits(y = 1) +
   labs(title = "Impact on Local Community") +
-  scale_fill_manual(values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
 ggsave(filename = "community-impact.png", device = "png", dpi = "retina",
@@ -101,8 +107,8 @@ dat %>%
   scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
   expand_limits(y = .8) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
-  scale_fill_manual("Survey", values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   coord_flip() +
   labs(title = "Percent Citing Top Three Negative Community Effects") +
   plot_theme_flip
@@ -125,8 +131,8 @@ dat %>%
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   expand_limits(y = 1) +
   labs(title = "When Negative Impacts Are Expected for Local Communities") +
-  scale_fill_manual(values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
 ggsave(filename = "community-when-impact.png", device = "png", dpi = "retina",
@@ -145,11 +151,11 @@ dat %>%
   mutate(avg = avg * -1) %>%
   ggplot(aes(reorder(prosperity_zone, prosperity_zone), avg, fill = survey)) +
   geom_col(position = position_dodge(-1)) +
-  geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1, color = survey), position = position_dodge(-1)) +
+  geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1.5, color = survey), position = position_dodge(-1)) +
   scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
   expand_limits(y = 50) +
-  scale_fill_manual("Survey", values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   coord_flip() +
   labs(title = "Estimated Expected Impact on Economy by NC Region") +
@@ -174,8 +180,8 @@ dat %>%
   geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1, color = survey), position = position_dodge(-1)) +
   scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
   expand_limits(y = 40) +
-  scale_fill_manual("Survey", values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   coord_flip() +
   labs(title = "Estimated Expected Impact on Local Employment by NC Region") +
@@ -198,8 +204,8 @@ dat %>%
   scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
   expand_limits(y = 1) +
   labs(title = "Impact on Local Government") +
-  scale_fill_manual(values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
 ggsave(filename = "local-gov-impact.png", device = "png", dpi = "retina",
@@ -236,8 +242,8 @@ dat %>%
   scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
   expand_limits(y = 1) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 35)) +
-  scale_fill_manual("Survey", values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   coord_flip() +
   labs(title = "Percent Citing Top Three Negative Effects") +
   plot_theme_flip
@@ -260,8 +266,8 @@ dat %>%
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   expand_limits(y = 1) +
   labs(title = "When Negative Impacts Are Expected for Local Government") +
-  scale_fill_manual(values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
 ggsave(filename = "local-gov-when-impact.png", device = "png", dpi = "retina",
@@ -283,8 +289,8 @@ dat %>%
   geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1, color = survey), position = position_dodge(-1)) +
   scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
   expand_limits(y = 40) +
-  scale_fill_manual("Survey", values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   coord_flip() +
   labs(title = "Estimated Average Revenue Impact on Local Government") +
@@ -309,8 +315,8 @@ dat %>%
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   expand_limits(y = 1) +
   labs(title = "Positive Impacts of Crisis On Local Government") +
-  scale_fill_manual(values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
 ggsave(filename = "local-gov-positive-impact.png", device = "png", dpi = "retina",
@@ -332,8 +338,8 @@ dat %>%
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   expand_limits(y = 1) +
   labs(title = "Positive Impacts of Crisis On Community") +
-  scale_fill_manual(values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
 ggsave(filename = "community-positive-impact.png", device = "png", dpi = "retina",
@@ -355,8 +361,8 @@ dat %>%
   geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1, color = survey), position = position_dodge(-1)) +
   scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
   expand_limits(y = 25) +
-  scale_fill_manual("Survey", values = c("#003f72", "#d34733")) +
-  scale_color_manual(values = c("#003f72", "#d34733"), guide = FALSE) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   coord_flip() +
   labs(title = "Estimated Average Employment Impact on Local Government") +
@@ -367,3 +373,71 @@ ggsave(filename = "local-gov-expected-employment.png", device = "png", dpi = "re
 
 ggsave(filename = "local-gov-expected-employment.svg", device = "svg", dpi = "retina",
        width = 9, height = 9, path = here("plots/"))
+
+## Difference in survey respondents
+subgroups <- c("juri_type", "q18", "county_tier", "prosperity_zone", "cog")
+
+grouped_dat <- dat %>%
+  mutate(juri_type = case_when(
+    str_length(coded_geoid) > 5 ~ "Municipality",
+    str_length(coded_geoid) <= 5 ~ "County"
+  )) %>%
+  mutate(county_tier = as.character(county_tier)) %>%
+  pivot_longer(cols = all_of(subgroups), names_to = "subgroup", values_to = "subgroup_value") %>%
+  mutate(subgroup_value = ifelse(is.na(subgroup_value), "Unknown", subgroup_value)) %>%
+  filter(subgroup_value != "Unknown") %>%
+  group_by(survey, subgroup, subgroup_value) %>%
+  count() %>%
+  ungroup() %>%
+  group_by(survey, subgroup) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = "survey", values_from = c("n", "pct")) %>%
+  mutate(diff = pct_Two - pct_One) %>%
+  clean_names()
+  
+grouped_dat %>%
+  pivot_longer(cols = c("pct_one", "pct_two")) %>%
+  filter(subgroup == "prosperity_zone") %>%
+  mutate(subgroup_value = str_remove(subgroup_value, " Region")) %>%
+  ggplot(aes(x = reorder(subgroup_value, -value), y = value, fill = name, color = name)) +
+  geom_col(position = position_dodge(-1)) +
+  geom_text(aes(y = value + 0.01, label = scales::percent(value, accuracy = 1)), position = position_dodge(-1)) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = c("One", "Two")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), expand =  c(0,0)) +
+  expand_limits(y = .25) +
+  coord_flip() +
+  labs(title = "Response Percentages by Prosperity Zone") +
+  plot_theme_flip
+
+ggsave(filename = "prosp-response-diff.png", device = "png", dpi = "retina",
+       width = 9, height = 9, path = here("plots/"))
+
+ggsave(filename = "prosp-response-diff.svg", device = "svg", dpi = "retina",
+       width = 9, height = 9, path = here("plots/"))
+
+grouped_dat %>%
+  pivot_longer(cols = c("pct_one", "pct_two")) %>%
+  filter(subgroup == "juri_type") %>%
+  mutate(subgroup_value = str_remove(subgroup_value, " Region")) %>%
+  ggplot(aes(x = reorder(subgroup_value, -value), y = value, fill = name, color = name)) +
+  geom_col(position = position_dodge(1)) +
+  geom_text(aes(y = value + 0.02, label = scales::percent(value, accuracy = 1)), position = position_dodge(1)) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = c("One", "Two")) +
+  scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), expand =  c(0,0)) +
+  expand_limits(y = .80) +
+  labs(title = "Response Percentages by Jurisdiction Type") +
+  plot_theme
+
+ggsave(filename = "juri-response-diff.png", device = "png", dpi = "retina",
+       width = 9, height = 6, path = here("plots/"))
+
+ggsave(filename = "juri-response-diff.svg", device = "svg", dpi = "retina",
+       width = 9, height = 6, path = here("plots/"))
+
+
+showtext_auto(enable = FALSE)

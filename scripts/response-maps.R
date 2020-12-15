@@ -2,7 +2,7 @@ library(tidyverse)
 library(tidycensus)
 library(tigris)
 library(sf)
-library(extrafont)
+library(showtext)
 library(ggtext)
 library(janitor)
 library(patchwork)
@@ -11,14 +11,20 @@ library(glue)
 library(lubridate)
 library(here)
 
+font_add(family = "Myriad Pro", regular = "C:/Windows/Installer/$PatchCache$/Managed/68AB67CA3301FFFF7706C0F070E41400/15.7.20033/MyriadPro_Regular.otf",
+         bold = "C:/Windows/Installer/$PatchCache$/Managed/68AB67CA3301FFFF7706C0F070E41400/15.7.20033/MyriadPro_Bold.otf1")
+
+showtext_auto()
+showtext_opts(dpi = 320)
+
 yel_pal <- c("#FCCB41","#FDBF11","#E88E2D","#CA5800","#843215")
 
-map_theme <- theme(text = element_text(family = "Arial"),
+map_theme <- theme(text = element_text(family = "Myriad Pro"),
                    plot.background = element_rect(fill = "transparent"),
                    panel.background = element_rect(fill = "transparent"),
                    panel.grid = element_blank(),
                    axis.ticks = element_blank(),
-                   plot.title = element_markdown(size = 24, face = "bold"),
+                   plot.title = element_markdown(size = 18, face = "bold", color = "#cf2d00"),
                    plot.subtitle = element_markdown(size = 14),
                    axis.title = element_text(size = 12, face = "italic"),
                    axis.text = element_blank(),
@@ -100,11 +106,12 @@ p1 <- final_map %>%
   labs(title = "<b style='color:#CA5800;'>COVID-19 Survey of Local Governments: Responses by County</b>") +
   facet_wrap(~survey, nrow = 2, ncol = 1) +
   map_theme +
-  theme(strip.background = element_rect(fill = "#4B9CD3"),
-        strip.text = element_text(family = "Arial", face = "bold", color = "white", size = 14))
+  theme(strip.background = element_rect(fill = "#cf2d00"),
+        strip.text = element_text(family = "Myriad Pro", face = "bold", color = "white", size = 14))
 
 p1 + inset_element(logo, left = 0.7, bottom = 0, right = 1, top = 0.09, align_to = 'full')
 
+p1
 
 ggsave(filename = "response-map.png", device = "png",
        path = "C:/Users/jsnjns/Desktop/", dpi = "retina", width = 16, height = 16)
@@ -165,3 +172,5 @@ p2
 
 ggsave(filename = "response-two-map.png", device = "png",
        path = "C:/Users/jsnjns/Desktop/", dpi = "retina", width = 16, height = 9)
+
+showtext_auto(enable = FALSE)
