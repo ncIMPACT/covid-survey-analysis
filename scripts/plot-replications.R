@@ -17,6 +17,8 @@ survey_one <- read_csv(here("data/survey-one-data.csv")) %>%
 
 dat <- rbind(dat, survey_one)
 
+plot_labels <- c("Spring 2020", "Fall 2020")
+
 font_add(family = "Myriad Pro", regular = "C:/Windows/Installer/$PatchCache$/Managed/68AB67CA3301FFFF7706C0F070E41400/15.7.20033/MyriadPro_Regular.otf",
          bold = "C:/Windows/Installer/$PatchCache$/Managed/68AB67CA3301FFFF7706C0F070E41400/15.7.20033/MyriadPro_Bold.otf1")
 
@@ -69,7 +71,7 @@ dat %>%
   scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
   expand_limits(y = 1) +
   labs(title = "Impact on Local Community") +
-  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
@@ -107,7 +109,7 @@ dat %>%
   scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
   expand_limits(y = .8) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
-  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   coord_flip() +
   labs(title = "Percent Citing Top Three Negative Community Effects") +
@@ -131,7 +133,7 @@ dat %>%
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   expand_limits(y = 1) +
   labs(title = "When Negative Impacts Are Expected for Local Communities") +
-  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
@@ -154,7 +156,7 @@ dat %>%
   geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1.5, color = survey), position = position_dodge(-1)) +
   scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
   expand_limits(y = 50) +
-  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   coord_flip() +
@@ -180,7 +182,7 @@ dat %>%
   geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1, color = survey), position = position_dodge(-1)) +
   scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
   expand_limits(y = 40) +
-  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   coord_flip() +
@@ -204,7 +206,7 @@ dat %>%
   scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
   expand_limits(y = 1) +
   labs(title = "Impact on Local Government") +
-  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
@@ -242,7 +244,7 @@ dat %>%
   scale_y_continuous(labels = scales::percent_format(), expand = c(0,0)) +
   expand_limits(y = 1) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 35)) +
-  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   coord_flip() +
   labs(title = "Percent Citing Top Three Negative Effects") +
@@ -266,7 +268,7 @@ dat %>%
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   expand_limits(y = 1) +
   labs(title = "When Negative Impacts Are Expected for Local Government") +
-  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
@@ -289,7 +291,7 @@ dat %>%
   geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1, color = survey), position = position_dodge(-1)) +
   scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
   expand_limits(y = 40) +
-  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   coord_flip() +
@@ -315,7 +317,7 @@ dat %>%
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   expand_limits(y = 1) +
   labs(title = "Positive Impacts of Crisis On Local Government") +
-  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
@@ -338,7 +340,7 @@ dat %>%
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   expand_limits(y = 1) +
   labs(title = "Positive Impacts of Crisis On Community") +
-  scale_fill_manual(values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual(values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   plot_theme
 
@@ -361,7 +363,7 @@ dat %>%
   geom_text(aes(label = glue("-{round(avg, 0)}%"), y = avg + 1, color = survey), position = position_dodge(-1)) +
   scale_y_continuous(labels = function(x) glue("-{x}%"), expand = c(0,0)) +
   expand_limits(y = 25) +
-  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00")) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   coord_flip() +
@@ -403,7 +405,7 @@ grouped_dat %>%
   ggplot(aes(x = reorder(subgroup_value, -value), y = value, fill = name, color = name)) +
   geom_col(position = position_dodge(-1)) +
   geom_text(aes(y = value + 0.01, label = scales::percent(value, accuracy = 1)), position = position_dodge(-1)) +
-  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = c("One", "Two")) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), expand =  c(0,0)) +
@@ -425,7 +427,7 @@ grouped_dat %>%
   ggplot(aes(x = reorder(subgroup_value, -value), y = value, fill = name, color = name)) +
   geom_col(position = position_dodge(1)) +
   geom_text(aes(y = value + 0.02, label = scales::percent(value, accuracy = 1)), position = position_dodge(1)) +
-  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = c("One", "Two")) +
+  scale_fill_manual("Survey", values = c("#003e85", "#cf2d00"), labels = plot_labels) +
   scale_color_manual(values = c("#003e85", "#cf2d00"), guide = FALSE) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), expand =  c(0,0)) +
