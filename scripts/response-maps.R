@@ -97,6 +97,11 @@ final_map %>%
   pull(label) -> legend_labels
 
 p1 <- final_map %>%
+  mutate(survey = case_when(
+    survey == "Survey One" ~ "Spring 2020",
+    survey == "Survey Two" ~ "Fall 2020"
+  )) %>%
+  mutate(survey = factor(survey, levels = c("Spring 2020", "Fall 2020"))) %>%
   st_as_sf() %>%
   ggplot() + 
   geom_sf(data = nc_counties, fill = "white", color = "black") +
